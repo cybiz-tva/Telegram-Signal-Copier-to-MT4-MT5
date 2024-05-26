@@ -2,7 +2,13 @@
 FROM python:3.11-slim
 
 # Install necessary system dependencies
-RUN apt-get update && apt-get install -y python3-dev gcc libffi-dev
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    gcc \
+    libffi-dev \
+    libssl-dev \
+    make \
+    build-essential
 
 # Set the working directory
 WORKDIR /app
@@ -11,7 +17,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Copy the rest of the application code into the container
 COPY . .
