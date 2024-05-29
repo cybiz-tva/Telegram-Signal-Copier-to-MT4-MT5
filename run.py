@@ -236,66 +236,57 @@ async def ConnectMetaTrader(update: Update, trade: dict, enterTrade: bool):
         # obtains account information from MetaTrader server
         account_information = await connection.get_account_information()
 
-        # Get the list of available symbols
-        symbols = await connection.get_symbols()
-
-        # Check if the symbol is valid
-        if trade['Symbol'] not in symbols:
-            error_message = f"Unknown symbol: {trade['Symbol']}. Please check the symbol and try again."
-            logger.error(error_message)
-            update.effective_message.reply_text(error_message)
-            return
-
         update.effective_message.reply_text("Successfully connected to MetaTrader!\nCalculating trade risk ... 🤔")
 
         # checks if the order is a market execution to get the current price of symbol
-        if trade['Entry'] == 'NOW':
+        if(trade['Entry'] == 'NOW'):
             price = await connection.get_symbol_price(symbol=trade['Symbol'])
 
             # uses bid price if the order type is a buy
-            if trade['OrderType'] == 'Buy':
+            if(trade['OrderType'] == 'Buy'):
                 trade['Entry'] = float(price['bid'])
 
             # uses ask price if the order type is a sell
-            if trade['OrderType'] == 'Sell':
+            if(trade['OrderType'] == 'Sell'):
                 trade['Entry'] = float(price['ask'])
 
         # produces a table with trade information
         GetTradeInformation(update, trade, account_information['balance'])
             
         # checks if the user has indicated to enter trade
-        if enterTrade:
+        if(enterTrade == True):
+
             # enters trade on to MetaTrader account
             update.effective_message.reply_text("Entering trade on MetaTrader Account ... 👨🏾‍💻")
 
             try:
                 # executes buy market execution order
-                if trade['OrderType'] == 'Buy':
+                if(trade['OrderType'] == 'Buy'):
                     for takeProfit in trade['TP']:
                         result = await connection.create_market_buy_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['StopLoss'], takeProfit)
 
                 # executes buy limit order
-                elif trade['OrderType'] == 'Buy Limit':
+                elif(trade['OrderType'] == 'Buy Limit'):
                     for takeProfit in trade['TP']:
                         result = await connection.create_limit_buy_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['Entry'], trade['StopLoss'], takeProfit)
 
                 # executes buy stop order
-                elif trade['OrderType'] == 'Buy Stop':
+                elif(trade['OrderType'] == 'Buy Stop'):
                     for takeProfit in trade['TP']:
                         result = await connection.create_stop_buy_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['Entry'], trade['StopLoss'], takeProfit)
 
                 # executes sell market execution order
-                elif trade['OrderType'] == 'Sell':
+                elif(trade['OrderType'] == 'Sell'):
                     for takeProfit in trade['TP']:
                         result = await connection.create_market_sell_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['StopLoss'], takeProfit)
 
                 # executes sell limit order
-                elif trade['OrderType'] == 'Sell Limit':
+                elif(trade['OrderType'] == 'Sell Limit'):
                     for takeProfit in trade['TP']:
                         result = await connection.create_limit_sell_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['Entry'], trade['StopLoss'], takeProfit)
 
                 # executes sell stop order
-                elif trade['OrderType'] == 'Sell Stop':
+                elif(trade['OrderType'] == 'Sell Stop'):
                     for takeProfit in trade['TP']:
                         result = await connection.create_stop_sell_order(trade['Symbol'], trade['PositionSize'] / len(trade['TP']), trade['Entry'], trade['StopLoss'], takeProfit)
                 
