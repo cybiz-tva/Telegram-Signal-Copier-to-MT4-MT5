@@ -13,6 +13,8 @@ from metaapi_cloud_sdk import MetaApi
 from prettytable import PrettyTable
 from telegram import ParseMode, Update
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater, ConversationHandler, CallbackContext
+from telegram.ext import Filters
+
 
 # MetaAPI Credentials
 API_KEY = os.environ.get("API_KEY")
@@ -522,6 +524,7 @@ def Calculation_Command(update: Update, context: CallbackContext) -> int:
 
 
 
+
 def main() -> None:
     """Runs the Telegram bot."""
 
@@ -530,18 +533,24 @@ def main() -> None:
     # get the dispatcher to register handlers
     dp = updater.dispatcher
 
-    # message handler
+    # start command handler
     dp.add_handler(CommandHandler("start", welcome))
 
     # help command handler
     dp.add_handler(CommandHandler("help", help))
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("trade", Trade_Command), CommandHandler("calculate", Calculation_Command)],
+        entry_points=[
+            CommandHandler("trade", Trade_Command, Filters.chat_type.groups),
+            CommandHandler("calculate", Calculation_Command, Filters.chat_type.groups)
+        ],
         states={
             TRADE: [MessageHandler(Filters.text & ~Filters.command, PlaceTrade)],
             CALCULATE: [MessageHandler(Filters.text & ~Filters.command, CalculateTrade)],
-            DECISION: [CommandHandler("yes", PlaceTrade), CommandHandler("no", cancel)]
+            DECISION: [
+                CommandHandler("yes", PlaceTrade),
+                CommandHandler("no", cancel)
+            ]
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
@@ -554,12 +563,13 @@ def main() -> None:
 
     # log all errors
     dp.add_error_handler(error)
-    
+
     # listens for incoming updates from Telegram
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TOKEN, webhook_url=APP_URL + TOKEN)
     updater.idle()
 
     return
+
 
 
 if __name__ == '__main__':
