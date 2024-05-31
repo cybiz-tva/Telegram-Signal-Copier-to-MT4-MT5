@@ -394,13 +394,14 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
-    if(not(update.effective_message.chat.username == TELEGRAM_USER)):
+    user = update.effective_message.from_user
+    if not (user.username == TELEGRAM_USER):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return
 
     update.effective_message.reply_text("Unknown command. Use /trade to place a trade or /calculate to find information for a trade. You can also use the /help command to view instructions for this bot.")
-
     return
+
 
 
 # Command Handlers
@@ -470,41 +471,47 @@ def error(update: Update, context: CallbackContext) -> None:
 
 def Trade_Command(update: Update, context: CallbackContext) -> int:
     """Asks user to enter the trade they would like to place.
-
+    
     Arguments:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
-    if(not(update.effective_message.chat.username == TELEGRAM_USER)):
+    # Check if the command is from the authorized user
+    user = update.effective_message.from_user
+    if not (user.username == TELEGRAM_USER):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return ConversationHandler.END
     
-    # initializes the user's trade as empty prior to input and parsing
+    # Initialize the user's trade as empty prior to input and parsing
     context.user_data['trade'] = None
     
-    # asks user to enter the trade
+    # Ask user to enter the trade
     update.effective_message.reply_text("Please enter the trade that you would like to place.")
-
+    
     return TRADE
+
 
 def Calculation_Command(update: Update, context: CallbackContext) -> int:
     """Asks user to enter the trade they would like to calculate trade information for.
-
+    
     Arguments:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
-    if(not(update.effective_message.chat.username == TELEGRAM_USER)):
+    # Check if the command is from the authorized user
+    user = update.effective_message.from_user
+    if not (user.username == TELEGRAM_USER):
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return ConversationHandler.END
 
-    # initializes the user's trade as empty prior to input and parsing
+    # Initialize the user's trade as empty prior to input and parsing
     context.user_data['trade'] = None
 
-    # asks user to enter the trade
+    # Ask user to enter the trade
     update.effective_message.reply_text("Please enter the trade that you would like to calculate.")
 
     return CALCULATE
+
 
 
 def main() -> None:
@@ -535,7 +542,7 @@ def main() -> None:
     dp.add_handler(conv_handler)
 
     # message handler for all messages that are not included in conversation handler
-    dp.add_handler(MessageHandler(Filters.text, unknown_command))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, unknown_command))
 
     # log all errors
     dp.add_error_handler(error)
@@ -545,7 +552,6 @@ def main() -> None:
     updater.idle()
 
     return
-
 
 if __name__ == '__main__':
     main()
