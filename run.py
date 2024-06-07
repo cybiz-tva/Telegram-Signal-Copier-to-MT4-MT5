@@ -131,7 +131,7 @@ def GetTradeInformation(update: Update, trade: dict, balance: float) -> None:
         multiplier = 1
 
     elif(trade['Symbol'] == 'ETHUSD'):
-        multiplier = 0.1
+        multiplier = 0.01
 
     elif(str(trade['Entry']).index('.') >= 2):
         multiplier = 0.01
